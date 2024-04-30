@@ -1,25 +1,24 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Net.Mxwlf.xOAuthRay.Abstractions;
-using Net.Mxwlf.xOAuthRay.BrowserLaunchers;
+﻿using Net.Mxwlf.xOAuthRay.Servers;
 
 namespace Net.Mxwlf.xOAuthRay.Cli
 {
-    internal class Program
+    internal class Program : ProgramBase
     {
         static async Task Main(string[] args)
         {
-            var codeGrant = GetServiceInstance();
+            // Get an auth server and client 
+            var authServer = AuthorizationServerFactory.GetServer(KnownAuthServers.MicrosoftAd);
+            var appClient = ClientFactory.GetPublicClientApp("http://localhost:56612/", "");
             
-            var authOptionsBuilder = new AuthOptionsBuilder();
-            authOptionsBuilder.WithRedirect("http://", "localhost", 56612);
-            authOptionsBuilder.WithClientId("cc08bfaf-4f8a-4b13-ab98-6a73bb46d501");
+            // Start the local http server that will listen from responses from the auth server when is done authenticating the user.
+            appClient.LocalCallbackListener.Start();
             
-            var authOptions = authOptionsBuilder.Build();
+            // Send the request to the authorization server to challenge the user to authenticate
+            await appClient.RequestAuthorizationCode(authServer);
 
-            var response = await codeGrant.Execute(authOptions, KnownAuthServers.Google);
-
+            // Wait until the user is authenticated and the authorization server sends the auth code to the redirect uri.
+            var response = await appClient.LocalCallbackListener.AwaitForAuthorizationCodeResponse();
+            
             if (response.IsSuccessful.HasValue && response.IsSuccessful.Value)
             {
                 Console.WriteLine("Success! the code is " + response.AuthorizationCode);
@@ -29,20 +28,6 @@ namespace Net.Mxwlf.xOAuthRay.Cli
                 Console.WriteLine("Not successful, the error code is " + response.ErrorMessage);
             }
             Console.ReadLine();
-        }
-
-        static AuthorizationCodeGrant GetServiceInstance()
-        {
-            var builder = Host.CreateApplicationBuilder();
-
-            builder.Services.AddSingleton<AuthorizationCodeGrant>();
-            builder.Services.AddSingleton<IBrowserLauncher, GoogleChromeBrowserLauncher>();
-            builder.Services.AddSingleton<AuthorizationRequester>();
-            builder.Services.AddSingleton<AuthorizationServerFactory>();
-
-            var host = builder.Build();
-
-            return host.Services.GetService<AuthorizationCodeGrant>();
         }
     }
 }

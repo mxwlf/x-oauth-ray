@@ -1,4 +1,4 @@
-namespace Net.Mxwlf.xOAuthRay;
+namespace Net.Mxwlf.xOAuthRay.Servers;
 
 public class AuthServerInfo
 {

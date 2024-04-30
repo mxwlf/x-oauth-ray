@@ -1,20 +1,37 @@
 using System.Collections.Specialized;
 using System.Net;
-using Net.Mxwlf.xOAuthRay.Abstractions;
 
 namespace Net.Mxwlf.xOAuthRay;
 
 public class LocalCallbackListener
 {
     private HttpListener http;
-    public void Start(string redirectUrl)
+    private readonly string _redirectUri;
+
+    public LocalCallbackListener(string redirectUri)
     {
+        _redirectUri = redirectUri;
         http = new HttpListener();
-        http.Prefixes.Add(redirectUrl);
+        http.Prefixes.Add(redirectUri);
+    }
+
+    public void Start()
+    {
+        // http = new HttpListener();
+        // http.Prefixes.Add(redirectUrl);
         http.Start();
     }
 
-    public async Task<NameValueCollection> AwaitResponse()
+    public async Task<AuthorizationCodeResponse> AwaitForAuthorizationCodeResponse()
+    {
+        var response = await AwaitResponse();
+
+        var codeResponse = AuthResponseParser.Parse(response);
+
+        return codeResponse;
+    }
+
+    internal async Task<NameValueCollection> AwaitResponse()
     {
         var context = await http.GetContextAsync();
         

@@ -1,10 +1,11 @@
-namespace Net.Mxwlf.xOAuthRay.Abstractions;
+namespace Net.Mxwlf.xOAuthRay;
 
-public class AuthorizationResponse
+public class AuthorizationCodeResponse
 {
     public string AuthorizationCode { get; set; }
 
     public bool? IsSuccessful { get; set; }
 
     public string ErrorMessage { get; set; }
+    
 }
