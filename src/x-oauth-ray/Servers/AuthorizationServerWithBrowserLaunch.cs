@@ -17,4 +17,16 @@ public class AuthorizationServerWithBrowserLaunch : IAuthorizationServer
         authRequest = $"{_authServerInfo.AuthorizationEndpoint}/{authRequest}";
         await _browserLauncher.Launch(authRequest);
     }
+
+    public async Task<TokenResponse> RequestToken(HttpRequestMessage requestMessage)
+    {
+        requestMessage.RequestUri = new Uri(_authServerInfo.TokenEndpoint);
+
+        var client = new HttpClient();
+        var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
+
+        var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        throw new NotImplementedException();
+    }
 }

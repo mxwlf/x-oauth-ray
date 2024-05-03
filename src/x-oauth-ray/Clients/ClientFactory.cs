@@ -6,4 +6,9 @@ public class ClientFactory
     {
         return new PublicClientApp(redirectUri, clientId);
     }
+
+    public PrivateService GetPrivateService(string redirectUri, string clientId, string clientSecret)
+    {
+        return new PrivateService(redirectUri, clientId, clientSecret);
+    }
 }

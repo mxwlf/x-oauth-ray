@@ -7,8 +7,13 @@ namespace Net.Mxwlf.xOAuthRay.Cli
         static async Task Main(string[] args)
         {
             // Get an auth server and client 
+            var redirectUri = "http://localhost:56612/";
+            var clientId = "";
+            var clientSecret = "";
+            
             var authServer = AuthorizationServerFactory.GetServer(KnownAuthServers.MicrosoftAd);
-            var appClient = ClientFactory.GetPublicClientApp("http://localhost:56612/", "");
+            var appClient = ClientFactory.GetPublicClientApp(redirectUri, clientId);
+            var serverClient = ClientFactory.GetPrivateService(redirectUri, clientId, clientSecret);
             
             // Start the local http server that will listen from responses from the auth server when is done authenticating the user.
             appClient.LocalCallbackListener.Start();
@@ -27,6 +32,9 @@ namespace Net.Mxwlf.xOAuthRay.Cli
             {
                 Console.WriteLine("Not successful, the error code is " + response.ErrorMessage);
             }
+
+            var tokenResponse = await serverClient.RequestToken(response.AuthorizationCode, authServer);
+            
             Console.ReadLine();
         }
     }
